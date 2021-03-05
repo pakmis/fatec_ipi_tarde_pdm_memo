@@ -7,46 +7,87 @@ import {
   Text,
   TextInput,
   View,
+  Alert
 } from "react-native";
 
 export default function App() {
-  const [lembrete, setLembrete] = useState("");
-  const [lembretes, setLembretes] = useState([]);
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [contatos, setContatos] = useState([]);
   const [memoCount, setMemoCount] = useState(0);
+  const numberPattern = /\d+/g;
+  const namePattern = /^[A-Za-z]+([\ A-Za-z]+)*/;
 
-  const handleAddMemo = () => {
-    setLembretes((lembretes) => {
-      setMemoCount((count) => count + 1);
-      return [...lembretes, { key: memoCount.toString(), value: lembrete }];
-    });
-    setLembrete("");
-  };
-
-  const handleTextChange = (text) => {
-    setLembrete(text);
+  const handleAddContact = () => {
+    if (name && number) {
+      console.log('Name: ', name)
+      console.log('Number: ', number)
+      setContatos((contatos) => {
+        setMemoCount((count) => count + 1);
+        return [
+          ...contatos,
+          {
+            key: memoCount.toString(),
+            value: {
+              name: name.match( namePattern ).join(''),
+              number: number.match( numberPattern ).join(''),
+            },
+          },
+        ];
+      });
+      setName("");
+      setNumber("");
+    } else {
+      Alert.alert(
+        "Aviso",
+        "O campo nome ou numero está vazio",
+        [
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel"
+          },
+          { text: "OK", onPress: () => console.log("OK Pressed") }
+        ],
+        { cancelable: false }
+      )
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.lembreteInputView}>
         <TextInput
-          value={lembrete}
-          onChangeText={handleTextChange}
+          value={name}
+          onChangeText={(text) => setName(text)}
           style={styles.lembreteTextInput}
-          placeholder="Lembrar..."
+          placeholder="Digite um nome"
+        />
+        <TextInput
+          value={number}
+          keyboardType="numeric"
+          onChangeText={(text) => setNumber(text)}
+          style={styles.lembreteTextInput}
+          placeholder="Digite um numero"
         />
 
         <View style={styles.memoButton}>
-          <Button title="Add" onPress={handleAddMemo} />
+          <Button title="Add" onPress={handleAddContact} />
+        </View>
+        <View style={styles.memoButton}>
+          <Button title="Clear" onPress={() => setContatos([])} />
         </View>
       </View>
 
       <View style={styles.memoList}>
         <FlatList
-          data={lembretes}
-          renderItem={(lembrete) => (
+          data={contatos}
+          renderItem={(contato) => (
             <View style={styles.itemNaLista}>
-              <Text key={lembrete.item.value}>{lembrete.item.value}</Text>
+              <View key={contato.item.value}>
+                <Text>Nome: {contato.item.value.name}</Text>
+                <Text>Numero: {contato.item.value.number} </Text>
+              </View>
             </View>
           )}
         />
